@@ -158,6 +158,7 @@ function Node() {
 }
 
 const renderCanvas = function () {
+  // @ts-ignore - Add this line to ignore the TypeScript error
   ctx = document.getElementById("canvas")?.getContext("2d");
   if (!ctx) return;
   
@@ -282,6 +283,7 @@ const TappCardLanding: React.FC<TappCardLandingProps> = ({ className }) => {
   const [email, setEmail] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+  const [videoError, setVideoError] = React.useState(false);
   const emailInputRef = React.useRef<HTMLDivElement>(null);
   
   React.useEffect(() => {
@@ -324,6 +326,11 @@ const TappCardLanding: React.FC<TappCardLandingProps> = ({ className }) => {
     if (emailInputRef.current) {
       emailInputRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleVideoError = () => {
+    console.log("Video failed to load, falling back to poster image");
+    setVideoError(true);
   };
 
   return (
@@ -458,40 +465,63 @@ const TappCardLanding: React.FC<TappCardLandingProps> = ({ className }) => {
             transition={{ delay: 0.5, duration: 0.8 }}
             className="w-full max-w-5xl mx-auto mt-8"
           >
-            <Spotlight className="w-full h-[400px] sm:h-[500px] md:h-[600px]">
-              <div className="relative w-full h-full flex items-center justify-center">
-                <motion.div
-                  initial={{ y: 0 }}
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="w-full max-w-md"
+            {!videoError ? (
+              // Video as main element
+              <div className="w-full h-[400px] sm:h-[500px] md:h-[600px] relative overflow-hidden rounded-md">
+                <video 
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  onError={handleVideoError}
                 >
-                  <Card className="w-full h-64 bg-background/50 backdrop-blur-sm border-primary/20 overflow-hidden">
-                    <div className="p-6 h-full flex flex-col">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-bold">TappCard</h3>
-                          <p className="text-sm text-muted-foreground">Digital Business Card</p>
-                        </div>
-                        <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
-                          <span className="text-primary font-bold">TC</span>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-auto">
-                        <div className="flex items-center gap-2">
-                          <div className="h-10 w-10 rounded-full bg-background/80"></div>
+                  <source src="/videos/card-animation.mp4" type="video/mp4" />
+                </video>
+                
+                {/* Empty container for any future content */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {/* Video only - no overlay content */}
+                </div>
+              </div>
+            ) : (
+              // Original Spotlight with Card as fallback
+              <Spotlight className="w-full h-[400px] sm:h-[500px] md:h-[600px]">
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <motion.div
+                    initial={{ y: 0 }}
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                    className="w-full max-w-md"
+                  >
+                    <Card className="w-full h-64 bg-background/50 backdrop-blur-sm border-primary/20 overflow-hidden">
+                      <div className="p-6 h-full flex flex-col">
+                        <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium">Your Name</p>
-                            <p className="text-xs text-muted-foreground">Position • Company</p>
+                            <h3 className="text-xl font-bold">TappCard</h3>
+                            <p className="text-sm text-muted-foreground">Digital Business Card</p>
+                          </div>
+                          <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="text-primary font-bold">TC</span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-auto">
+                          <div className="flex items-center gap-2">
+                            <div className="h-10 w-10 rounded-full bg-background/80"></div>
+                            <div>
+                              <p className="font-medium">Your Name</p>
+                              <p className="text-xs text-muted-foreground">Position • Company</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              </div>
-            </Spotlight>
+                    </Card>
+                  </motion.div>
+                </div>
+              </Spotlight>
+            )}
           </motion.div>
         </motion.div>
       </section>
