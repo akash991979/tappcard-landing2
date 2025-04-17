@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   typescript: {
     // !! WARN !!
     // This setting allows TypeScript errors to be ignored during production builds.
@@ -17,12 +16,28 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
   },
-  // Enable Incremental Static Regeneration
-  experimental: {
-    // Enable concurrent features for better performance
-    concurrentFeatures: true,
-    // Optimize server components
-    serverComponents: true,
+  // Add cache control headers to prevent stale content
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
 };
 
